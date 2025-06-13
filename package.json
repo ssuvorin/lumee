@@ -1,0 +1,27 @@
+{
+  "name": "lumee-landing",
+  "version": "1.0.0",
+  "description": "Лендинг-страница для женского сообщества lumee",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "landing-page",
+    "women-community",
+    "lumee",
+    "static-site"
+  ],
+  "author": "lumee team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/lumee.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/lumee/issues"
+  },
+  "homepage": "https://lumee.vercel.app"
+} 
