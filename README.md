@@ -41,7 +41,18 @@ cp config.example.js config.js
 4. Сохраните и задеплойте как веб-приложение
 5. Скопируйте URL веб-приложения
 
-### 3. Настройка config.js
+### 3. Настройка конфигурации
+
+**Вариант 1: Environment Variables (Рекомендуемый)**
+
+1. В Vercel Dashboard → Settings → Environment Variables
+2. Добавьте переменную:
+   - **Имя**: `NEXT_PUBLIC_GOOGLE_SCRIPT_URL`
+   - **Значение**: `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec`
+   - **Environments**: Production, Preview, Development
+3. Redeploy проект
+
+**Вариант 2: Локальный config.js**
 
 Отредактируйте `config.js`:
 
