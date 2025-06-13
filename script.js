@@ -59,93 +59,31 @@ const getFormSubmissionUrl = () => {
     return notionUrl;
 };
 
-// Отправка данных в Notion
+// Отправка данных в Notion через наш API
 async function sendToNotion(data) {
-    const notionToken = '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';
-    const databaseId = '2115bab08903801f82a8c02adc60b3f6';
-    
-    const notionData = {
-        parent: {
-            database_id: databaseId
-        },
-        properties: {
-            "Имя": {
-                title: [
-                    {
-                        text: {
-                            content: data.name || ''
-                        }
-                    }
-                ]
-            },
-            "Email": {
-                email: data.email || ''
-            },
-            "Telegram": {
-                rich_text: [
-                    {
-                        text: {
-                            content: data.telegram || ''
-                        }
-                    }
-                ]
-            },
-            "Соцсети": {
-                rich_text: [
-                    {
-                        text: {
-                            content: data.social || ''
-                        }
-                    }
-                ]
-            },
-            "О себе": {
-                rich_text: [
-                    {
-                        text: {
-                            content: data.about || ''
-                        }
-                    }
-                ]
-            },
-            "Дата": {
-                date: {
-                    start: new Date().toISOString().split('T')[0]
-                }
-            },
-            "Статус": {
-                select: {
-                    name: "Новая"
-                }
-            }
-        }
-    };
-
-    console.log('🚀 Отправляем в Notion:', notionData);
+    console.log('🚀 Отправляем через наш API в Notion:', data);
 
     try {
-        const response = await fetch('https://api.notion.com/v1/pages', {
+        const response = await fetch('/api/notion', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${notionToken}`,
-                'Content-Type': 'application/json',
-                'Notion-Version': '2022-06-28'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(notionData)
+            body: JSON.stringify(data)
         });
 
         const result = await response.json();
-        console.log('✅ Ответ Notion:', result);
+        console.log('✅ Ответ API:', result);
 
-        if (response.ok) {
+        if (result.success) {
             console.log('✅ Заявка успешно сохранена в Notion!');
             return true;
         } else {
-            console.error('❌ Ошибка Notion API:', result);
+            console.error('❌ Ошибка API:', result);
             return false;
         }
     } catch (error) {
-        console.error('❌ Ошибка отправки в Notion:', error);
+        console.error('❌ Ошибка отправки:', error);
         return false;
     }
 }
