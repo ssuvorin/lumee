@@ -49,33 +49,46 @@ const form = document.getElementById('applicationForm');
 const submitButton = form.querySelector('.submit-button');
 
 // Получение URL для отправки формы
-const getFormSubmissionUrl = () => {
+let cachedFormUrl = null;
+
+const getFormSubmissionUrl = async () => {
     console.log('🔍 Проверяем источники URL:');
     
-    // Отладка: показываем все переменные окружения
-    console.log('🐛 Отладка переменных:');
-    console.log('- window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL:', window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL);
-    console.log('- window.location.hostname:', window.location.hostname);
-    console.log('- Все переменные NEXT_PUBLIC_*:', Object.keys(window).filter(key => key.startsWith('NEXT_PUBLIC_')));
-    
-    // Проверяем Vercel environment variables (работает в браузере)
-    if (typeof window !== 'undefined') {
-        // Vercel автоматически добавляет публичные переменные в window
-        const vercelUrl = window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-        if (vercelUrl) {
-            console.log('- Найден URL в Vercel env:', vercelUrl);
-            return vercelUrl;
-        }
+    // Если уже загружали, возвращаем кэшированное значение
+    if (cachedFormUrl !== null) {
+        console.log('- Используем кэшированный URL:', cachedFormUrl);
+        return cachedFormUrl;
     }
     
-    // Проверяем локальный config.js
+    // Проверяем локальный config.js (для разработки)
     if (typeof window !== 'undefined' && window.LUMEE_CONFIG && window.LUMEE_CONFIG.formUrl) {
         console.log('- Найден URL в config.js:', window.LUMEE_CONFIG.formUrl);
-        return window.LUMEE_CONFIG.formUrl;
+        cachedFormUrl = window.LUMEE_CONFIG.formUrl;
+        return cachedFormUrl;
+    }
+    
+    // Загружаем конфигурацию с API (для продакшена)
+    try {
+        console.log('- Загружаем конфигурацию с API...');
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        
+        console.log('- Ответ API:', config);
+        
+        if (config.status === 'success' && config.formUrl) {
+            console.log('- Найден URL в API:', config.formUrl);
+            cachedFormUrl = config.formUrl;
+            return cachedFormUrl;
+        } else {
+            console.log('- API вернул:', config.message || 'URL не настроен');
+        }
+    } catch (error) {
+        console.log('- Ошибка загрузки API:', error.message);
     }
     
     console.log('- URL не найден, работаем в демо-режиме');
-    console.log('- Проверьте: добавлена ли переменная NEXT_PUBLIC_GOOGLE_SCRIPT_URL в Vercel?');
+    console.log('- Проверьте: добавлена ли переменная GOOGLE_SCRIPT_URL в Vercel?');
+    cachedFormUrl = null;
     return null;
 };
 
@@ -107,7 +120,7 @@ form.addEventListener('submit', function(e) {
 
 async function sendToGoogleSheets(data) {
     try {
-        const formUrl = getFormSubmissionUrl();
+        const formUrl = await getFormSubmissionUrl();
         
         console.log('🔍 Отладка отправки формы:');
         console.log('- formUrl:', formUrl);
