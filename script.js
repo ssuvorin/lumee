@@ -50,35 +50,105 @@ const submitButton = form.querySelector('.submit-button');
 
 // Получение URL для отправки формы
 const getFormSubmissionUrl = () => {
-    console.log('🔍 Используем прямой URL');
+    console.log('🔍 Используем Notion API');
     
-    // Правильный URL веб-приложения Google Apps Script
-    const formUrl = 'https://script.google.com/macros/s/AKfycby_PhlIORy0ybHY1nlpeLZShILI_D920g2o2jRVgHrF4xeS8gh3jtzZpZR5ZcbGxYN9/exec';
+    // Notion API endpoint
+    const notionUrl = 'https://api.notion.com/v1/pages';
     
-    console.log('- URL найден:', formUrl);
-    return formUrl;
+    console.log('- Notion API URL:', notionUrl);
+    return notionUrl;
 };
 
-// Тестовая функция для проверки Google Apps Script
-async function testGoogleScript() {
-    const formUrl = getFormSubmissionUrl();
-    console.log('🧪 Тестируем Google Apps Script...');
+// Отправка данных в Notion
+async function sendToNotion(data) {
+    const notionToken = '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';
+    const databaseId = '2115bab08903801f82a8c02adc60b3f6';
     
+    const notionData = {
+        parent: {
+            database_id: databaseId
+        },
+        properties: {
+            "Имя": {
+                title: [
+                    {
+                        text: {
+                            content: data.name || ''
+                        }
+                    }
+                ]
+            },
+            "Email": {
+                email: data.email || ''
+            },
+            "Telegram": {
+                rich_text: [
+                    {
+                        text: {
+                            content: data.telegram || ''
+                        }
+                    }
+                ]
+            },
+            "Соцсети": {
+                rich_text: [
+                    {
+                        text: {
+                            content: data.social || ''
+                        }
+                    }
+                ]
+            },
+            "О себе": {
+                rich_text: [
+                    {
+                        text: {
+                            content: data.about || ''
+                        }
+                    }
+                ]
+            },
+            "Дата": {
+                date: {
+                    start: new Date().toISOString().split('T')[0]
+                }
+            },
+            "Статус": {
+                select: {
+                    name: "Новая"
+                }
+            }
+        }
+    };
+
+    console.log('🚀 Отправляем в Notion:', notionData);
+
     try {
-        const response = await fetch(formUrl, {
-            method: 'GET',
-            mode: 'no-cors'
+        const response = await fetch('https://api.notion.com/v1/pages', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${notionToken}`,
+                'Content-Type': 'application/json',
+                'Notion-Version': '2022-06-28'
+            },
+            body: JSON.stringify(notionData)
         });
-        console.log('✅ GET запрос отправлен, скрипт отвечает');
+
+        const result = await response.json();
+        console.log('✅ Ответ Notion:', result);
+
+        if (response.ok) {
+            console.log('✅ Заявка успешно сохранена в Notion!');
+            return true;
+        } else {
+            console.error('❌ Ошибка Notion API:', result);
+            return false;
+        }
     } catch (error) {
-        console.log('❌ Ошибка GET запроса:', error);
+        console.error('❌ Ошибка отправки в Notion:', error);
+        return false;
     }
 }
-
-// Запускаем тест при загрузке страницы
-window.addEventListener('load', () => {
-    setTimeout(testGoogleScript, 2000);
-});
 
 // Form submission
 form.addEventListener('submit', function(e) {
@@ -102,139 +172,28 @@ form.addEventListener('submit', function(e) {
     // Show loading state
     showLoadingState();
     
-    // Send to Google Sheets
-    sendToGoogleSheets(data);
-});
-
-async function sendToGoogleSheets(data) {
-    try {
-        const formUrl = getFormSubmissionUrl();
-        
-        console.log('🔍 Отладка отправки формы:');
-        console.log('- formUrl:', formUrl);
-        console.log('- данные:', data);
-        
-        // Если URL не настроен, показываем демо-режим
-        if (!formUrl) {
-            console.log('📝 Демо-режим: Google Apps Script URL не настроен');
+    // Send to Notion
+    sendToNotion(data).then(success => {
+        if (success) {
+            showSuccessState();
             setTimeout(() => {
-                showSuccessState();
-                console.log('📝 Демо-режим: Данные формы:', data);
-                setTimeout(() => {
-                    form.reset();
-                    resetButtonState();
-                }, 3000);
-            }, 2000);
-            return;
-        }
-
-        // Определяем, работаем ли мы на localhost
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' ||
-                           window.location.hostname === '';
-
-        if (isLocalhost) {
-            console.log('🏠 Localhost: используем iframe метод для обхода CORS');
-            await sendViaIframe(formUrl, data);
+                form.reset();
+                resetButtonState();
+            }, 3000);
         } else {
-            console.log('🌐 Production: используем обычный fetch запрос');
-            await sendViaFetch(formUrl, data);
+            showErrorState('Произошла ошибка при отправке формы');
+            setTimeout(() => {
+                resetButtonState();
+            }, 3000);
         }
-
-    } catch (error) {
-        console.error('❌ Ошибка отправки:', error);
-        console.error('❌ Тип ошибки:', error.name);
-        console.error('❌ Сообщение ошибки:', error.message);
-        
+    }).catch(error => {
+        console.error('❌ Ошибка:', error);
         showErrorState('Произошла ошибка при отправке формы');
         setTimeout(() => {
             resetButtonState();
         }, 3000);
-    }
-}
-
-// Отправка через fetch (для production)
-async function sendViaFetch(formUrl, data) {
-    console.log('🚀 Отправляем через fetch на:', formUrl);
-    
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-        formData.append(key, data[key] || '');
-        console.log(`- ${key}: ${data[key] || ''}`);
     });
-    
-    const response = await fetch(formUrl, {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors' // Google Apps Script требует no-cors
-    });
-    
-    console.log('✅ Fetch запрос отправлен');
-    
-    // Показываем успех
-    setTimeout(() => {
-        showSuccessState();
-        setTimeout(() => {
-            form.reset();
-            resetButtonState();
-        }, 3000);
-    }, 1000);
-}
-
-// Отправка через iframe (для localhost)
-async function sendViaIframe(formUrl, data) {
-    console.log('🚀 Отправляем через скрытую форму на:', formUrl);
-    
-    // Создаем скрытую форму для отправки без CORS проблем
-    const hiddenForm = document.createElement('form');
-    hiddenForm.method = 'POST';
-    hiddenForm.action = formUrl;
-    hiddenForm.target = 'hidden-iframe';
-    hiddenForm.style.display = 'none';
-    
-    // Создаем скрытые поля
-    const fields = ['name', 'email', 'telegram', 'social', 'about'];
-    fields.forEach(fieldName => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = fieldName;
-        input.value = data[fieldName] || '';
-        hiddenForm.appendChild(input);
-        console.log(`- ${fieldName}: ${data[fieldName] || ''}`);
-    });
-    
-    // Создаем скрытый iframe для получения ответа
-    let iframe = document.getElementById('hidden-iframe');
-    if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = 'hidden-iframe';
-        iframe.name = 'hidden-iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-    }
-    
-    // Добавляем форму в документ и отправляем
-    document.body.appendChild(hiddenForm);
-    
-    console.log('🚀 Отправляем скрытую форму...');
-    hiddenForm.submit();
-    
-    // Удаляем форму после отправки
-    setTimeout(() => {
-        document.body.removeChild(hiddenForm);
-    }, 1000);
-    
-    // Показываем успех (мы не можем проверить реальный ответ из-за CORS)
-    setTimeout(() => {
-        console.log('✅ Форма отправлена через iframe');
-        showSuccessState();
-        // Reset form after success
-        setTimeout(() => {
-            form.reset();
-            resetButtonState();
-        }, 3000);
-    }, 2000);
-}
+});
 
 function validateForm(data) {
     const errors = [];
