@@ -48,36 +48,34 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 const form = document.getElementById('applicationForm');
 const submitButton = form.querySelector('.submit-button');
 
-// Безопасное получение URL для отправки формы
-// Для продакшена: установите переменную окружения GOOGLE_SCRIPT_URL в Vercel
-// Или создайте отдельный config.js файл (не коммитьте его в git!)
+// Получение URL для отправки формы
 const getFormSubmissionUrl = () => {
     console.log('🔍 Проверяем источники URL:');
     
-    // Проверяем переменные окружения Vercel (приоритет #1)
-    if (typeof process !== 'undefined' && process.env && process.env.GOOGLE_SCRIPT_URL) {
-        console.log('- Найден URL в process.env:', process.env.GOOGLE_SCRIPT_URL);
-        return process.env.GOOGLE_SCRIPT_URL;
-    }
+    // Отладка: показываем все переменные окружения
+    console.log('🐛 Отладка переменных:');
+    console.log('- window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL:', window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL);
+    console.log('- window.location.hostname:', window.location.hostname);
+    console.log('- Все переменные NEXT_PUBLIC_*:', Object.keys(window).filter(key => key.startsWith('NEXT_PUBLIC_')));
     
-    // Проверяем Vercel runtime environment variables (приоритет #2)
-    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-        // На Vercel можно использовать публичные переменные через window
-        const vercelUrl = window.VERCEL_GOOGLE_SCRIPT_URL || window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+    // Проверяем Vercel environment variables (работает в браузере)
+    if (typeof window !== 'undefined') {
+        // Vercel автоматически добавляет публичные переменные в window
+        const vercelUrl = window.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
         if (vercelUrl) {
             console.log('- Найден URL в Vercel env:', vercelUrl);
             return vercelUrl;
         }
     }
     
-    // Проверяем глобальную переменную из config.js (приоритет #3)
+    // Проверяем локальный config.js
     if (typeof window !== 'undefined' && window.LUMEE_CONFIG && window.LUMEE_CONFIG.formUrl) {
-        console.log('- Найден URL в window.LUMEE_CONFIG:', window.LUMEE_CONFIG.formUrl);
+        console.log('- Найден URL в config.js:', window.LUMEE_CONFIG.formUrl);
         return window.LUMEE_CONFIG.formUrl;
     }
     
     console.log('- URL не найден, работаем в демо-режиме');
-    // Демо-режим (URL не настроен)
+    console.log('- Проверьте: добавлена ли переменная NEXT_PUBLIC_GOOGLE_SCRIPT_URL в Vercel?');
     return null;
 };
 
