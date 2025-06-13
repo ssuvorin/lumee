@@ -1,29 +1,29 @@
-export default async function handler(req, res) {
+export default async function handler(request, response) {
   // Устанавливаем CORS заголовки
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Обрабатываем preflight запрос
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
+  if (request.method === 'OPTIONS') {
+    response.status(200).end();
     return;
   }
 
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+  if (request.method !== 'POST') {
+    response.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
   try {
-    const { name, email, telegram, social, about } = req.body;
+    const { name, email, telegram, social, about } = request.body;
 
     // Получаем токен и ID базы из переменных окружения
     const notionToken = process.env.NOTION_TOKEN;
     const databaseId = process.env.NOTION_DATABASE_ID;
 
     if (!notionToken || !databaseId) {
-      res.status(500).json({ 
+      response.status(500).json({ 
         error: 'Notion credentials not configured',
         message: 'NOTION_TOKEN or NOTION_DATABASE_ID not set',
         debug: {
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
 
     console.log('Отправляем в Notion:', JSON.stringify(notionData, null, 2));
 
-    const response = await fetch('https://api.notion.com/v1/pages', {
+    const apiResponse = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${notionToken}`,
@@ -103,18 +103,18 @@ export default async function handler(req, res) {
       body: JSON.stringify(notionData)
     });
 
-    const result = await response.json();
+    const result = await apiResponse.json();
     console.log('Ответ Notion:', result);
 
-    if (response.ok) {
-      res.status(200).json({ 
+    if (apiResponse.ok) {
+      response.status(200).json({ 
         success: true, 
         message: 'Заявка успешно сохранена в Notion!',
         id: result.id
       });
     } else {
       console.error('Ошибка Notion API:', result);
-      res.status(400).json({ 
+      response.status(400).json({ 
         success: false, 
         error: 'Notion API error',
         details: result
@@ -123,7 +123,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Ошибка сервера:', error);
-    res.status(500).json({ 
+    response.status(500).json({ 
       success: false, 
       error: 'Server error',
       message: error.message

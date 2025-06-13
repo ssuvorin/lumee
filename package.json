@@ -1,25 +1,30 @@
 {
   "name": "lumee-landing",
   "version": "1.0.0",
-  "description": "Лендинг-страница для женского сообщества lumee",
+  "description": "Landing page for lumee women's community",
   "main": "index.html",
   "scripts": {
-    "dev": "python3 -m http.server 8000"
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Static site - no build needed'",
+    "start": "python -m http.server 8000"
   },
   "keywords": [
     "landing-page",
     "women-community",
-    "lumee",
-    "static-site"
+    "lumee"
   ],
-  "author": "lumee team",
+  "author": "Sergey Suvorin",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ssuvorin/lumee.git"
+    "url": "https://github.com/ssuvorin/lumee.git"
   },
   "bugs": {
     "url": "https://github.com/ssuvorin/lumee/issues"
   },
-  "homepage": "https://lumee.vercel.app"
-} 
+  "homepage": "https://lumee.vercel.app",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "node-fetch": "^2.6.7"
+  }
+}
