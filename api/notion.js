@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Устанавливаем CORS заголовки
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -25,7 +25,11 @@ module.exports = async function handler(req, res) {
     if (!notionToken || !databaseId) {
       res.status(500).json({ 
         error: 'Notion credentials not configured',
-        message: 'NOTION_TOKEN or NOTION_DATABASE_ID not set'
+        message: 'NOTION_TOKEN or NOTION_DATABASE_ID not set',
+        debug: {
+          hasToken: !!notionToken,
+          hasDb: !!databaseId
+        }
       });
       return;
     }
@@ -35,7 +39,7 @@ module.exports = async function handler(req, res) {
         database_id: databaseId
       },
       properties: {
-        "Имя": {
+        "Name": {
           title: [
             {
               text: {
@@ -125,4 +129,4 @@ module.exports = async function handler(req, res) {
       message: error.message
     });
   }
-}; 
+} 
