@@ -50,13 +50,13 @@ const submitButton = form.querySelector('.submit-button');
 
 // Получение URL для отправки формы
 const getFormSubmissionUrl = () => {
-    console.log('🔍 Используем Notion API');
+    console.log('🔍 Используем наш API endpoint');
     
-    // Notion API endpoint
-    const notionUrl = 'https://api.notion.com/v1/pages';
+    // Наш API endpoint на Vercel
+    const apiUrl = '/api/notion';
     
-    console.log('- Notion API URL:', notionUrl);
-    return notionUrl;
+    console.log('- API URL:', apiUrl);
+    return apiUrl;
 };
 
 // Отправка данных в Notion через наш API
@@ -64,6 +64,8 @@ async function sendToNotion(data) {
     console.log('🚀 Отправляем через наш API в Notion:', data);
 
     try {
+        console.log('📡 Делаем запрос к /api/notion...');
+        
         const response = await fetch('/api/notion', {
             method: 'POST',
             headers: {
@@ -71,6 +73,15 @@ async function sendToNotion(data) {
             },
             body: JSON.stringify(data)
         });
+
+        console.log('📥 Получен ответ:', response.status, response.statusText);
+
+        if (!response.ok) {
+            console.error('❌ HTTP ошибка:', response.status);
+            const errorText = await response.text();
+            console.error('❌ Текст ошибки:', errorText);
+            return false;
+        }
 
         const result = await response.json();
         console.log('✅ Ответ API:', result);
