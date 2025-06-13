@@ -49,47 +49,14 @@ const form = document.getElementById('applicationForm');
 const submitButton = form.querySelector('.submit-button');
 
 // Получение URL для отправки формы
-let cachedFormUrl = null;
-
-const getFormSubmissionUrl = async () => {
-    console.log('🔍 Проверяем источники URL:');
+const getFormSubmissionUrl = () => {
+    console.log('🔍 Используем прямой URL');
     
-    // Если уже загружали, возвращаем кэшированное значение
-    if (cachedFormUrl !== null) {
-        console.log('- Используем кэшированный URL:', cachedFormUrl);
-        return cachedFormUrl;
-    }
+    // Прямой URL Google Apps Script
+    const formUrl = 'https://script.google.com/macros/s/1T_I2kyDOB2OXhymuPkwkLShhenRfiFqRB8XXagup32w/exec';
     
-    // Проверяем локальный config.js (для разработки)
-    if (typeof window !== 'undefined' && window.LUMEE_CONFIG && window.LUMEE_CONFIG.formUrl) {
-        console.log('- Найден URL в config.js:', window.LUMEE_CONFIG.formUrl);
-        cachedFormUrl = window.LUMEE_CONFIG.formUrl;
-        return cachedFormUrl;
-    }
-    
-    // Загружаем конфигурацию с API (для продакшена)
-    try {
-        console.log('- Загружаем конфигурацию с API...');
-        const response = await fetch('/api/config');
-        const config = await response.json();
-        
-        console.log('- Ответ API:', config);
-        
-        if (config.status === 'success' && config.formUrl) {
-            console.log('- Найден URL в API:', config.formUrl);
-            cachedFormUrl = config.formUrl;
-            return cachedFormUrl;
-        } else {
-            console.log('- API вернул:', config.message || 'URL не настроен');
-        }
-    } catch (error) {
-        console.log('- Ошибка загрузки API:', error.message);
-    }
-    
-    console.log('- URL не найден, работаем в демо-режиме');
-    console.log('- Проверьте: добавлена ли переменная GOOGLE_SCRIPT_URL в Vercel?');
-    cachedFormUrl = null;
-    return null;
+    console.log('- URL найден:', formUrl);
+    return formUrl;
 };
 
 // Form submission
@@ -120,7 +87,7 @@ form.addEventListener('submit', function(e) {
 
 async function sendToGoogleSheets(data) {
     try {
-        const formUrl = await getFormSubmissionUrl();
+        const formUrl = getFormSubmissionUrl();
         
         console.log('🔍 Отладка отправки формы:');
         console.log('- formUrl:', formUrl);
