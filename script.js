@@ -52,12 +52,33 @@ const submitButton = form.querySelector('.submit-button');
 const getFormSubmissionUrl = () => {
     console.log('🔍 Используем прямой URL');
     
-    // Прямой URL Google Apps Script
+    // Правильный URL веб-приложения Google Apps Script
     const formUrl = 'https://script.google.com/macros/s/AKfycby_PhlIORy0ybHY1nlpeLZShILI_D920g2o2jRVgHrF4xeS8gh3jtzZpZR5ZcbGxYN9/exec';
     
     console.log('- URL найден:', formUrl);
     return formUrl;
 };
+
+// Тестовая функция для проверки Google Apps Script
+async function testGoogleScript() {
+    const formUrl = getFormSubmissionUrl();
+    console.log('🧪 Тестируем Google Apps Script...');
+    
+    try {
+        const response = await fetch(formUrl, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+        console.log('✅ GET запрос отправлен, скрипт отвечает');
+    } catch (error) {
+        console.log('❌ Ошибка GET запроса:', error);
+    }
+}
+
+// Запускаем тест при загрузке страницы
+window.addEventListener('load', () => {
+    setTimeout(testGoogleScript, 2000);
+});
 
 // Form submission
 form.addEventListener('submit', function(e) {
