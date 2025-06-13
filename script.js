@@ -53,7 +53,7 @@ const getFormSubmissionUrl = () => {
     console.log('🔍 Используем прямой URL');
     
     // Прямой URL Google Apps Script
-    const formUrl = 'https://script.google.com/macros/s/1T_I2kyDOB2OXhymuPkwkLShhenRfiFqRB8XXagup32w/exec';
+    const formUrl = 'https://script.google.com/macros/s/AKfycby_PhlIORy0ybHY1nlpeLZShILI_D920g2o2jRVgHrF4xeS8gh3jtzZpZR5ZcbGxYN9/exec';
     
     console.log('- URL найден:', formUrl);
     return formUrl;
